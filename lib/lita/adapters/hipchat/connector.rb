@@ -1,26 +1,26 @@
-require "lita/adapters/hipchat/callback"
+require 'lita/adapters/hipchat/callback'
 
-require "xmpp4r"
-require "xmpp4r/roster/helper/roster"
-require "xmpp4r/muc/helper/simplemucclient"
-require "xmpp4r/muc/helper/mucbrowser"
+require 'xmpp4r'
+require 'xmpp4r/roster/helper/roster'
+require 'xmpp4r/muc/helper/simplemucclient'
+require 'xmpp4r/muc/helper/mucbrowser'
 
 module Lita
   module Adapters
     class HipChat < Adapter
+      # XMPP Room handling
       class Connector
         attr_reader :robot, :client, :roster
 
         def initialize(robot, jid, password, server, debug: false)
           @robot = robot
-          @jid = normalized_jid(jid, "chat.hipchat.com", "bot")
+          @jid = normalized_jid(jid, 'chat.hipchat.com', 'bot')
           @password = password
           @server = server
           @client = Jabber::Client.new(@jid)
-          if debug
-            Lita.logger.info("Enabling Jabber log.")
-            Jabber.debug = true
-          end
+          return unless debug
+          Lita.logger.info('Enabling Jabber log.')
+          Jabber.debug = true
         end
 
         def jid
@@ -38,7 +38,7 @@ module Lita
         def join(muc_domain, room)
           room_jid = normalized_jid(room, muc_domain, robot.name)
           if mucs[room_jid.bare.to_s]
-            Lita.logger.debug "Already in room with JID #{room_jid.bare.to_s}"
+            Lita.logger.debug "Already in room with JID #{room_jid.bare}"
             return
           end
 
@@ -56,9 +56,9 @@ module Lita
         end
 
         def list_rooms(muc_domain)
-          Lita.logger.debug("Querying server for list of rooms.")
+          Lita.logger.debug('Querying server for list of rooms.')
           browser = Jabber::MUC::MUCBrowser.new(client)
-          browser.muc_rooms(muc_domain).map { |jid, name| jid.to_s }
+          browser.muc_rooms(muc_domain).map { |jid, _name| jid.to_s }
         end
 
         def message_jid(user_jid, strings)
@@ -90,14 +90,13 @@ module Lita
 
         def set_topic(room_jid, topic)
           muc = mucs[room_jid]
-          if muc
-            Lita.logger.debug("Setting topic for MUC #{room_jid}: #{topic}")
-            muc.subject = topic
-          end
+          return unless muc
+          Lita.logger.debug("Setting topic for MUC #{room_jid}: #{topic}")
+          muc.subject = topic
         end
 
         def shut_down
-          Lita.logger.info("Disconnecting from HipChat.")
+          Lita.logger.info('Disconnecting from HipChat.')
           client.close
         rescue IOError, SystemCallError => e
           Lita.logger.warn("Encountered error during disconnect: #{e}")
@@ -106,20 +105,20 @@ module Lita
         private
 
         def send_presence
-          Lita.logger.debug("Sending initial XMPP presence.")
+          Lita.logger.debug('Sending initial XMPP presence.')
           client.send(Jabber::Presence.new(:chat))
         end
 
         def client_connect
-          Lita.logger.info("Connecting to HipChat.")
+          Lita.logger.info('Connecting to HipChat.')
           client.connect(@server)
           sleep 0.0001 until client.is_connected?
-          Lita.logger.debug("Authenticating with HipChat.")
+          Lita.logger.debug('Authenticating with HipChat.')
           client.auth(@password)
         end
 
         def register_exception_handler
-          client.on_exception do |error, connection, error_source|
+          client.on_exception do |_error, _connection, _error_source|
             robot.shut_down
           end
         end
@@ -133,12 +132,12 @@ module Lita
         end
 
         def load_roster
-          Lita.logger.debug("Loading roster.")
+          Lita.logger.debug('Loading roster.')
           @roster = Jabber::Roster::Helper.new(client, false)
           Callback.new(robot, roster).roster_update
           roster.get_roster
           roster.wait_for_roster
-          robot.mention_name = roster[jid].attributes["mention_name"]
+          robot.mention_name = roster[jid].attributes['mention_name']
         end
 
         def normalized_jid(jid, domain, resource)
@@ -152,7 +151,7 @@ module Lita
         end
 
         def encode_string(s)
-          s.encode('UTF-8', :invalid => :replace, :undef => :replace)
+          s.encode('UTF-8', invalid: :replace, undef: :replace)
         end
       end
     end

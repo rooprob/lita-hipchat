@@ -1,20 +1,22 @@
-require "lita"
-require "lita/adapters/hipchat/connector"
+require 'lita'
+require 'lita/adapters/hipchat/connector'
 
 module Lita
+  # HipChat Adapter module for Lita
   module Adapters
+    # HipChat API v1 Adapter implements XMPP interface
     class HipChat < Adapter
-      namespace "hipchat"
+      namespace 'hipchat'
 
       # Required attributes
       config :jid, type: String, required: true
       config :password, type: String, required: true
 
       # Optional attributes
-      config :server, type: String, default: "chat.hipchat.com"
+      config :server, type: String, default: 'chat.hipchat.com'
       config :debug, type: [TrueClass, FalseClass], default: false
       config :rooms, type: [Symbol, Array]
-      config :muc_domain, type: String, default: "conf.hipchat.com"
+      config :muc_domain, type: String, default: 'conf.hipchat.com'
       config :ignore_unknown_users, type: [TrueClass, FalseClass], default: false
 
       attr_reader :connector
@@ -93,7 +95,7 @@ module Lita
 
       def rooms
         if join_all_rooms? || rooms_configured?
-          log.warn(t("config.rooms.deprecated"))
+          log.warn(t('config.rooms.deprecated'))
 
           if config.rooms == :all
             connector.list_rooms(muc_domain)

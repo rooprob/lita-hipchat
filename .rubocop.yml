@@ -1,0 +1,13 @@
+LineLength:
+  Max: 120
+Style/FileName:
+  Exclude:
+    - 'lib/lita-hipchat.rb'
+ClassLength:
+  Max: 121
+ClassLength:
+  Max: 121
+MethodLength:
+  Max: 12
+AbcSize:
+  Max: 22

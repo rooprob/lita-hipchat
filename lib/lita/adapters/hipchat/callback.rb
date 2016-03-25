@@ -1,6 +1,7 @@
 module Lita
   module Adapters
     class HipChat < Adapter
+      # Messaging event handling
       class Callback
         attr_reader :robot, :roster
 
@@ -22,7 +23,7 @@ module Lita
         end
 
         def muc_message(muc)
-          muc.on_message do |time, nick, text|
+          muc.on_message do |_time, nick, text|
             user = user_by_name(nick)
             next unless user
             source = Source.new(user: user, room: muc.jid.bare.to_s)
@@ -35,9 +36,9 @@ module Lita
         end
 
         def roster_update
-          roster.add_update_callback do |old_item, item|
+          roster.add_update_callback do |_old_item, item|
             next unless item
-            jid = item.attributes["jid"]
+            jid = item.attributes['jid']
             Lita.logger.debug("Updating record for user with ID: #{jid}.")
             create_user(item.attributes)
           end
@@ -47,9 +48,9 @@ module Lita
 
         def create_user(user_data)
           User.create(
-            user_data["jid"],
-            name: user_data["name"],
-            mention_name: user_data["mention_name"]
+            user_data['jid'],
+            name: user_data['name'],
+            mention_name: user_data['mention_name']
           )
         end
 
@@ -60,7 +61,7 @@ module Lita
 
         def user_by_name(name)
           Lita.logger.debug("Looking up user with name: #{name}.")
-          items = roster.items.detect { |jid, item| item.iname == name }
+          items = roster.items.detect { |_jid, item| item.iname == name }
           if items
             user_by_jid(items.first)
           elsif !robot.config.adapters.hipchat.ignore_unknown_users

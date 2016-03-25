@@ -1,12 +1,14 @@
-require "simplecov"
-require "coveralls"
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+require 'simplecov'
+require 'coveralls'
+formatters = [
   SimpleCov::Formatter::HTMLFormatter,
   Coveralls::SimpleCov::Formatter
 ]
-SimpleCov.start { add_filter "/spec/" }
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(formatters)
 
-require "lita-hipchat"
-require "lita/rspec"
+SimpleCov.start { add_filter '/spec/' }
+
+require 'lita-hipchat'
+require 'lita/rspec'
 
 Lita.version_3_compatibility_mode = false
